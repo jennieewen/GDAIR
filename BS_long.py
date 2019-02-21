@@ -4,7 +4,6 @@ from openpyxl import load_workbook
 
 def Report_BS_long(reportDate, analyzeDate, batch):
 
-	#define constant variables
 	appPath = os.path.dirname(os.path.abspath(__file__))
 	templateFile= appPath + '/Template/Template-TO15-BS-Agilent.xlsx'
 	inputBSFile = appPath + '/BS/Source/epatemp-bs.txt'
@@ -36,7 +35,6 @@ def Report_BS_long(reportDate, analyzeDate, batch):
 				endpos = i-3
 			i += 1 	
 
-	# retrieve needed lines from list and assign them to new_lines variable 
 	data_bs_lines = bs_lines[startpos:endpos]
 
 	bs_items = []
@@ -44,12 +42,9 @@ def Report_BS_long(reportDate, analyzeDate, batch):
 		constituent = data_bs_line[7:33].strip()
 		bs = data_bs_line[59:64].strip()
 
-		# put items list into class 
 		r = BS(constituent, bs)
 		bs_items.append(r)
 			
-
-	# end of generating new file
 
 	bsd_lines = []
 	startpos = 0
@@ -71,13 +66,9 @@ def Report_BS_long(reportDate, analyzeDate, batch):
 		constituent = data_bsd_line[7:33].strip()
 		bsd = data_bsd_line[59:64].strip()
 
-		# put items list into class 
 		d = BSD(constituent,bsd)
 		bsd_items.append(d)
-	#print("BSD", bsd)
-	#print("BS", bs)		
 		
-	# generate file from template 
 	in_file = open(templateFile, 'rb')
 	indata = in_file.read()
 
@@ -87,12 +78,10 @@ def Report_BS_long(reportDate, analyzeDate, batch):
 	out_file.close()
 	in_file.close()
 
-	# update outputFile sheet with data from bs_items & bsd_items
 	wb = openpyxl.load_workbook(outputFile)
 	sheetname = sheetName
 	ws = wb.active
 
-	# fill static fields
 	ws["K3"].value = analyzeDate
 	ws["K5"].value = batch
 
