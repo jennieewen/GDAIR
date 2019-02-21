@@ -4,14 +4,12 @@ from openpyxl import load_workbook
 
 def Report_BLK_short(reportDate, analyzeDate, batch):
 
-	#define constant variables
 	appPath = os.path.dirname(os.path.abspath(__file__))
 	templateFile= appPath + '/Template/Template-BTX-BLK-Agilent.xlsx'
 	inputFile = appPath + '/BLK/Source/epatemp.txt'
 	outputFile = appPath + "/BLK/Target/BTX-BLK-" + reportDate.replace("/","") + "-Agilent.xlsx"
 	sheetName = "Report"
 
-	#define output sheet
 	sheetStartRow = 18
 
 
@@ -20,12 +18,10 @@ def Report_BLK_short(reportDate, analyzeDate, batch):
 			self.CONSTITUENT = CONSTITUENT # avoid using Python keywords where possible
 			self.Result = Result
 
-	# take static data out of file 
 	wb = load_workbook(templateFile)
 	sheetname = sheetName
 	ws = wb[sheetname]
 
-	# put template data into template_list 
 	TemplateData_list = []
 	i = sheetStartRow
 
@@ -40,15 +36,11 @@ def Report_BLK_short(reportDate, analyzeDate, batch):
 			break
 		i += 1
 
-	# define Item class 
 	class Item():
 		def __init__(self, CONSTITUENT='', Result=''): #Mark = ug/cu M 
 			self.CONSTITUENT = CONSTITUENT 
 			self.Result = Result
 			
-
-
-	# open epatemp and read out every line to python using list 
 	lines = []
 	startpos = 0
 	endpos = 0
@@ -61,18 +53,14 @@ def Report_BLK_short(reportDate, analyzeDate, batch):
 			if 	'qualifier out of range' in line:
 				endpos = i-3
 			i += 1 	
-
-				
-	# retrieve needed lines from list and assign them to new_lines variable 
+		
 	date_lines = lines[startpos:endpos]
 
-	# retrieve neccessary colums and put them into items list 
 	items = []
 	for date_line in date_lines:
 		constituent = date_line[7:33].strip()
 		result = date_line[56:64].strip()
 		
-		# put items list into class 
 		r = Item(constituent, result,)
 		items.append(r)
 
@@ -84,7 +72,6 @@ def Report_BLK_short(reportDate, analyzeDate, batch):
 				break
 			
 
-	# generate file from template 
 	in_file = open(templateFile, 'rb')
 	indata = in_file.read()
 
@@ -94,17 +81,14 @@ def Report_BLK_short(reportDate, analyzeDate, batch):
 	out_file.close()
 	in_file.close()
 
-	# write sorted_list into excel sheet outputFile
 	wb = openpyxl.load_workbook(outputFile)
 	sheetname = sheetName
 	ws = wb.active
 
-	# fill static fields
 	ws["J4"].value = reportDate
 	ws["J5"].value = analyzeDate
 	ws["J7"].value = batch
 
-	# fill data from item list
 	k = sheetStartRow
 	i = 0
 	for stuff in TemplateData_list:
