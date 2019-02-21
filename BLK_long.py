@@ -4,7 +4,6 @@ from openpyxl import load_workbook
 
 def Report_BLK_long(reportDate, analyzeDate, batch):
 
-	#define constant variables
 	appPath = os.path.dirname(os.path.abspath(__file__))
 	static_file = appPath + '/Template/StaticData.xlsx'
 	templateFile= appPath + '/Template/Template-TO15-BLK-Agilent.xlsx'
@@ -12,13 +11,10 @@ def Report_BLK_long(reportDate, analyzeDate, batch):
 	outputFile = appPath + "/BLK/Target/TO15-blk-" + reportDate.replace("/","") + "-Agilent.xlsx"
 	sheetName = "Report"
 
-	#define output sheet
 	sheetStartRow = 17
 	sheetDataRows = 33
 	sheetPageRows = 54
 
-
-	# define staticdata class 
 	class StaticData(object):
 		def __init__(self, CONSTITUENT='',MW='', CAS='', PQL = '', Note = '', ORDERBY = ''):
 			self.CONSTITUENT = CONSTITUENT # avoid using Python keywords where possible
@@ -28,12 +24,10 @@ def Report_BLK_long(reportDate, analyzeDate, batch):
 			self.Note = Note
 			self.ORDERBY = ORDERBY
 
-	# take static data out of file 
 	wb = load_workbook(static_file)
 	sheetname = sheetName
 	ws = wb[sheetname]
 
-	# put static data into staticdata_list 
 	staticdata_list = []
 	i = 2
 	for row in ws.rows:
@@ -47,7 +41,6 @@ def Report_BLK_long(reportDate, analyzeDate, batch):
 		staticdata_list.append(r)
 		i += 1
 	
-	# define Item class 
 	class Item():
 		def __init__(self, CONSTITUENT='', MW='', CAS='', PQL='', Result='', Mark='', Note='', ORDERBY=''): #Mark = ug/cu M 
 			self.CONSTITUENT = CONSTITUENT 
@@ -59,7 +52,6 @@ def Report_BLK_long(reportDate, analyzeDate, batch):
 			self.Note = Note
 			self.ORDERBY = ORDERBY
 
-	# open epatemp and read out every line to python using list 
 	lines = []
 	startpos = 0
 	endpos = 0
@@ -74,20 +66,16 @@ def Report_BLK_long(reportDate, analyzeDate, batch):
 			i += 1 	
 
 				
-	# retrieve needed lines from list and assign them to new_lines variable 
 	data_lines = lines[startpos:endpos]
 
-	# retrieve neccessary colums and put them into items list 
 	items = []
 	for date_line in data_lines:
 		constituent = date_line[7:33].strip()
 		result = date_line[56:64].strip()
 		
-		# put items list into class 
 		r = Item(constituent, "", "", "", result, "", "")
 		items.append(r)
 
-	# fill necessary fields from staticdata lis	
 	for item in items:
 		if item.CONSTITUENT != None: 
 			for data in staticdata_list:	
@@ -98,10 +86,8 @@ def Report_BLK_long(reportDate, analyzeDate, batch):
 					item.Note = data.Note
 					item.ORDERBY = data.ORDERBY
 
-	# sorting items list									
 	sorted_list = sorted(items, key = lambda p: p.ORDERBY)		
 		
-	# generate/copy file from template 
 	in_file = open(templateFile, 'rb')
 	indata = in_file.read()
 
@@ -112,17 +98,14 @@ def Report_BLK_long(reportDate, analyzeDate, batch):
 	in_file.close()
 
 
-	# write sorted_list into excel sheet outputFile
 	wb = openpyxl.load_workbook(outputFile)
 	sheetname = sheetName
 	ws = wb.active
 
-	# fill static fields
 	ws["J4"].value = reportDate
 	ws["J5"].value = analyzeDate
 	ws["J7"].value = batch
 
-	# fill data from item list
 	k = sheetStartRow
 	i = 0
 	for stuff in sorted_list:
