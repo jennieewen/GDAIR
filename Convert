@@ -1,0 +1,50 @@
+# Hide columns based on B, L1, L2... values in parameter file
+def remove_cols():
+    # Read parameters excel file
+    dv = pd.read_excel(input_dir + '/parameters.xlsx', 'Subdivisions', header=[0])
+
+    row_idx = [x+2 for x in range (len(dv.index))]
+    sub_list = dv['sub'].tolist()
+
+    # Create hash containing relevant rows  [ex: {2:101, 3:102, 4: 103, 5:104, 6:105, 7:106, 8:107, 9:108, 10:109, 11:110, 12:111, 13:112, 14:113, 15:114, 16:115, 17:116, 18:117, 19:118, 20:119, 21:120}]
+    match_row = {}
+    for sub, val in zip(row_idx, sub_list):
+        match_row[sub] = val
+
+    # Find relevant columns
+    checking_cols = ["B"]
+    cols_order = []
+    for i in range(1, loadings_num+1):  # Use loadings_num for calculation
+        checking_cols.append("L"+str(i))
+        cols_order.append(dv.columns.get_loc("L"+str(i)))
+    cols_order.append(cols_order[-1]+1)
+
+    # Create hash containing relevant columns [ex: {7:"B", 8:"L1", 9:"L2", 10:"L3"}]    
+    match_col = {}
+    for sub, val in zip(cols_order, checking_cols):
+        match_col[sub] = val
+
+    # Detect all cells containing 'off', indicating removal is needed
+    l = [(dv[col][dv[col].eq('off')].index[i]+2, dv.columns.get_loc(col)) for col in dv.columns for i in range(len(dv[col][dv[col].eq('off')].index))]
+    cols_to_remove = []
+    for i, t in enumerate(l):
+        element_one = t[0]
+        element_two = int(t[1]) + 1
+        lst = [match_row[element_one], match_col[element_two]]
+        cols_to_remove.append(lst)
+
+    remove_items = []
+    for cols in cols_to_remove:
+        item = "Sub" + str(cols[0]) + "_" + str(cols[1])
+        remove_items.append(item)
+
+    # Open each csv file and remove columns that are not needed
+    mycsvdir = output_dir
+    csvfiles = glob.glob(os.path.join(mycsvdir, '*.csv'))
+    for csvfile in csvfiles:
+        if csvfile.rsplit('/', 1)[-1] == "flow.csv":
+            continue
+        df = pd.read_csv(csvfile)
+        df = df.drop(remove_items, axis=1)
+        df.to_csv(csvfile)
+        print("Removed columns in file", csvfile.rsplit('/', 1)[-1])
